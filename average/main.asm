@@ -189,9 +189,9 @@ section .data
    char_point db '.'
    filename db 'data.txt', 0
    buffer times 1024 db 0
-   x times 8 dd 0
+   x times 7 dd 0
    xlen equ (($ - x)/4)
-   y times 8 dd 0
+   y times 7 dd 0
    ylen equ (($ - y)/4)
 
    done db 'Done', 0xA, 0xD
