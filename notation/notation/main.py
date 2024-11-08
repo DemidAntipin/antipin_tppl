@@ -1,43 +1,66 @@
-from notation.exceptions import UnknownOperatorError, MissingOperandError, TooManyOperandsError
+from notation.exceptions import MissingOperandError, InterpreterError, BadToken
+from notation.token import Token, TokenType
 
-def isOperand(s: str) -> bool:
-    try:
-        operand=float(s)
-        return True
-    except ValueError:
-        return False
+class Interpreter():
+    def __init__(self):
+        self._pos=0
+        self._text=""
+        self._current_token = None
 
-def isOperator(operator: str) -> bool:
-    available_operators=['+', '-', '*', '/']
-    if operator in available_operators:
-        return True
-    else:
-        raise UnknownOperatorError("Unknown operator")
+    def __next(self):
+        if self._pos > len(self._text)-1:
+            return Token(TokenType.EOL, "")
+        current_char = self._text[self._pos]
+        if current_char.isdigit():
+            self._pos+=1
+            while not self._text[self._pos].isspace():
+                current_char=self._text[self._pos]+current_char
+                self._pos+=1
+            return Token(TokenType.INTEGER, current_char)
+        available_operators=["+", "-", "*", "/"]
+        if current_char in available_operators:
+            self._pos+=1
+            return Token(TokenType.OPERATOR, current_char)
+        if current_char.isspace():
+            self._pos+=1
+            return Token(TokenType.SPACE, current_char)
+        raise BadToken("Bad token")
 
-def calculate(s: str) -> float:
-    operands=[]
-    for x in s.split()[::-1]:
-        if (isOperand(x)):
-            operands.append(float(x))
+    def __check_token(self, type_:TokenType)->bool:
+        if self._current_token.type_ == type_:
+            return True
         else:
-            if isOperator(x):
-                try:
-                    op1=operands.pop()
-                    op2=operands.pop()
-                except IndexError:
-                    raise MissingOperandError("Not enough operands for the operation")
-                match x:
-                    case '+':
-                        operands.append(op1+op2)
-                    case '-':
-                        operands.append(op1-op2)
-                    case '*':
-                        operands.append(op1*op2)
-                    case '/':
-                        try:
-                            operands.append(op1/op2)
-                        except ZeroDivisionError:
-                            raise ZeroDivisionError("Division by zero")
-    if len(operands)>1:
-        raise TooManyOperandsError("Invalid expression. Too many operands")
-    return operands[0]
+            return False
+
+    def eval(self, s:str)->float:
+        self._text=s[::-1]
+        operands=[]
+        self._current_token=self.__next()
+        while not self.__check_token(TokenType.EOL):
+          if self.__check_token(TokenType.INTEGER):
+            operands.append(float(self._current_token.value))
+          elif self.__check_token(TokenType.OPERATOR):
+            try:
+              left=operands.pop()
+              right=operands.pop()
+              op=self._current_token
+              match op.value:
+                case "+":
+                    operands.append( left + right )
+                case "-":
+                    operands.append( left - right )
+                case "*":
+                    operands.append( left * right )
+                case "/":
+                    if right==0:
+                        raise ZeroDivisionError
+                    operands.append( left / right )
+            except IndexError:
+              raise MissingOperandError("Too few operands for operation")
+          self._current_token=self.__next()
+        print(operands)
+        if len(operands)==1:
+          return operands[0]
+        else:
+          raise InterpreterError("Interpreter finished job with error")
+

@@ -1,8 +1,8 @@
 class MissingOperandError(Exception):
     ...
 
-class TooManyOperandsError(Exception):
+class InterpreterError(Exception):
     ...
 
-class UnknownOperatorError(Exception):
+class BadToken(Exception):
     ...
