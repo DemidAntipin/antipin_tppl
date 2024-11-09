@@ -1,60 +1,52 @@
 import pytest
-from notation import Interpreter
-from notation.exceptions import MissingOperandError, InterpreterError, BadToken
+from notation import Notation
+from notation.exceptions import MissingOperandError, NotationError, BadToken
 from notation.token import Token, TokenType
 
+@pytest.fixture
+def notate():
+    return Notation()
+
 class TestNotation:
-    def test_interpreter_init(self):
-        Interpreter()
+    def test_notation(self):
+        Notation()
 
     def test_token_types(self):
-        IntegerToken = Token(TokenType.INTEGER, 2)
+        IntegerToken = Token(TokenType.NUMBER, 2)
         OperatorToken = Token(TokenType.OPERATOR, '+')
-        SpaceToken = Token(TokenType.SPACE, ' ')
-        assert IntegerToken.type_ == TokenType.INTEGER
+        assert IntegerToken.type_ == TokenType.NUMBER
         assert OperatorToken.type_ == TokenType.OPERATOR
-        assert SpaceToken.type_ == TokenType.SPACE
 
     def test_token_to_str(self):
-        token = Token(TokenType.INTEGER, "42")
-        assert str(token) == f"Token({TokenType.INTEGER}, 42)"
+        token = Token(TokenType.NUMBER, "42")
+        assert str(token) == f"Token({TokenType.NUMBER}, 42)"
 
     @pytest.mark.parametrize(
         "notation, result",
         [
-            ("+ - 13 4 55", 64.0),
-            ("+ 2 * 2 - 2 1", 4.0),
-            ("+ + 10 20 30", 60.0),
-            ("/ + 3 10 * + 2 3 - 3 5", -1.3)
+            ("+ - 13 4 55", "( ( 13 - 4 ) + 55 )"),
+            ("+ 2 * 2 - 2 1", "( 2 + ( 2 * ( 2 - 1 ) ) )"),
+            ("+ + 10 20 30", "( ( 10 + 20 ) + 30 )"),
+            ("/ + 3 10 * + 2 3 - 3 5", "( ( 3 + 10 ) / ( ( 2 + 3 ) * ( 3 - 5 ) ) )")
         ]
     )
-    def test_eval(self, notation, result):
-        interpreter = Interpreter()
-        assert interpreter.eval(notation) == pytest.approx(result, 0.01)
+    def test_eval(self, notate, notation, result):
+        assert notate.to_infix(notation) == result
 
-    def test_bad_token(self):
-        interpreter = Interpreter()
+    def test_bad_token(self, notate):
         notation="^"
         with pytest.raises(BadToken):
-            interpreter.eval(notation)
+            notate.to_infix(notation)
 
-    def test_missing_operands(self):
-        interpreter = Interpreter()
+    def test_missing_operands(self, notate):
         notation1="+"
         notation2="- - 1 2"
         with pytest.raises(MissingOperandError):
-            interpreter.eval(notation1)
+            notate.to_infix(notation1)
         with pytest.raises(MissingOperandError):
-            interpreter.eval(notation2)
+            notate.to_infix(notation2)
 
-    def test_zero_division(self):
-        interpreter = Interpreter()
-        notation="/ 2 0"
-        with pytest.raises(ZeroDivisionError):
-            interpreter.eval(notation)
-
-    def test_interpreter_error(self):
-        interpreter = Interpreter()
+    def test_notation_error(self, notate):
         notation="- - 2 2 2 2 2 2"
-        with pytest.raises(InterpreterError):
-            interpreter.eval(notation)
+        with pytest.raises(NotationError):
+            notate.to_infix(notation)

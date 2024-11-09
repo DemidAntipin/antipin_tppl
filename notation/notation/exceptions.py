@@ -1,7 +1,7 @@
 class MissingOperandError(Exception):
     ...
 
-class InterpreterError(Exception):
+class NotationError(Exception):
     ...
 
 class BadToken(Exception):

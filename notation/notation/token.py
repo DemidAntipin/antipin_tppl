@@ -1,9 +1,8 @@
 from enum import Enum, auto
 
 class TokenType(Enum):
-    INTEGER=auto()
+    NUMBER=auto()
     OPERATOR=auto()
-    SPACE=auto()
     EOL = auto()
 
 class Token:

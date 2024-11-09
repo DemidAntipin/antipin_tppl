@@ -1,3 +1,3 @@
-from .main import Interpreter
-from .exceptions import InterpreterError, MissingOperandError, BadToken
+from .main import Notation
+from .exceptions import NotationError, MissingOperandError, BadToken
 from .token import Token, TokenType
