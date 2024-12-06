@@ -14,24 +14,37 @@ class TestParser:
             parser.eval("5 -*-***- 3")
 
     def test_parse_token(self, parser):
-        parser.eval("5")
+        parsed=parser.eval("5")
+        assert str(parsed)=="Number(Token(TokenType.NUMBER, 5))"
 
     def test_parse_expr(self, parser):
-        parser.eval("(6-5)/(-(-(-5)))")
-        parser.eval("+5")
+        parsed1=parser.eval("(6-5)/(-(-(-5)))")
+        parsed2=parser.eval("+5")
+        assert str(parsed1)=="BinOp/(BinOp-(Number(Token(TokenType.NUMBER, 6)), Number(Token(TokenType.NUMBER, 5))), UnaryOp-(UnaryOp-(UnaryOp-(Number(Token(TokenType.NUMBER, 5))))))"
+        assert str(parsed2)=="UnaryOp+(Number(Token(TokenType.NUMBER, 5)))"
 
     def test_parse_var(self, parser):
-        parser.eval("x")
+        var1=parser.eval("x")
+        assert str(var1)=="Variable(x)"
+        var2=parser.eval("5+x+y+5")
+        assert str(var2)=="BinOp+(BinOp+(BinOp+(Number(Token(TokenType.NUMBER, 5)), Variable(x)), Variable(y)), Number(Token(TokenType.NUMBER, 5)))"
 
     def test_parse_assignment(self, parser):
-        parser.eval("x := 5+5")
+        parsed=parser.eval("x := 5+5")
+        assert str(parsed)=="Assign(x, BinOp+(Number(Token(TokenType.NUMBER, 5)), Number(Token(TokenType.NUMBER, 5))))"
 
     def test_parse_block(self, parser):
-        parser.eval("BEGIN END")
-    
-    def test_parse_fail(self, parser):
+        empty_block=parser.eval("BEGIN END")
+        assert str(empty_block)=="Begin(End())"
         with pytest.raises(SyntaxError):
-            parser.eval(";")
+            separator=parser.eval(";")
+        block=parser.eval('''BEGIN
+                                x := 2+5;
+                            END
+                          ''')
+        assert str(block)=="Begin(Assign(x, BinOp+(Number(Token(TokenType.NUMBER, 2)), Number(Token(TokenType.NUMBER, 5))))End())"
+    
+    def test_parse_missing_token(self, parser):
         with pytest.raises(SyntaxError):
             parser.eval(" 8 *")
     
@@ -48,4 +61,5 @@ class TestParser:
             x := 11;
             END
         '''
-        parser.eval(text)
+        parsed=parser.eval(text)
+        assert str(parsed)=="Begin(Assign(y, Number(Token(TokenType.NUMBER, 2)))Begin(Assign(a, Number(Token(TokenType.NUMBER, 3)))Assign(a, Variable(a))Assign(b, BinOp+(BinOp+(Number(Token(TokenType.NUMBER, 10)), Variable(a)), BinOp/(BinOp*(Number(Token(TokenType.NUMBER, 10)), Variable(y)), Number(Token(TokenType.NUMBER, 4)))))Assign(c, BinOp-(Variable(a), Variable(b)))End())Assign(x, Number(Token(TokenType.NUMBER, 11)))End())"

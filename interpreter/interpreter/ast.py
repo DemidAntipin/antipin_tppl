@@ -33,7 +33,7 @@ class Assign(Node):
         self.value = value
 
     def __str__(self):
-        return f"{self.__class__.__name__}({self.variable.value} := {self.value})"
+        return f"{self.__class__.__name__}({self.variable.value}, {self.value})"
     
 class Variable(Node):
     def __init__(self, token: Token):
@@ -47,11 +47,11 @@ class Begin(Node):
         self.statements = statements
 
     def __str__(self):
-        return f"{self.__class__.__name__}({self.statements})"
+        return f"{self.__class__.__name__}({''.join(str(i) for i in self.statements)})"
 
 class End(Node):
     def __init__(self):
         pass
 
     def __str__(self):
-        return f"{self.__class__.__name__}END"
+        return f"{self.__class__.__name__}()"

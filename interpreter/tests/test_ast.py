@@ -21,40 +21,40 @@ class TestAst:
         lexer.init("5")
         token=lexer.next()
         number=Number(token)
-        print(number)
+        assert str(number)=='Number(Token(TokenType.NUMBER, 5))'
 
     def test_binop_node(self, num, lexer):
         lexer.init("+")
         op=lexer.next()
         binop=BinOp(num, op, num)
-        print(binop)
+        assert str(binop)=="BinOp+(Number(Token(TokenType.NUMBER, 5)), Number(Token(TokenType.NUMBER, 5)))"
     
     def test_unaryop_node(self, lexer, num):
         lexer.init("-")
         op=lexer.next()
         unop=UnaryOp(op, num)
-        print(unop)
+        assert str(unop)=="UnaryOp-(Number(Token(TokenType.NUMBER, 5)))"
 
     def test_variable_node(self, lexer):
         lexer.init("x")
         x=lexer.next()
         var=Variable(x)
-        print(var)
+        assert str(var)=="Variable(x)"
 
     def test_assign_node(self, lexer, num):
         lexer.init("x")
         x=lexer.next()
         var=Assign(x, num)
-        print(var)
+        assert str(var)=="Assign(x, Number(Token(TokenType.NUMBER, 5)))"
 
     def test_begin_node(self):
         statements=list()
         begin=Begin(statements)
-        print(begin)
+        assert str(begin)=="Begin()"
 
     def test_end_node(self):
         end=End()
-        print(end)
+        assert str(end)=="End()"
 
 
 
